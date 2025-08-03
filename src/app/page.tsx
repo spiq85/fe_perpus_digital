@@ -1,539 +1,346 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, BookOpen, User, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { 
+  BookOpen, Star, Users, Download, Search, Heart, 
+  ArrowRight, Sparkles, LogIn, UserPlus, Play,
+  Award, Globe, Shield, Zap
+} from 'lucide-react';
 
-const EBookAuthPages = () => {
-  const router = useRouter();
-  const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
-  // Form states
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: ''
-  });
-  
-  const [registerForm, setRegisterForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    password_confirmation: ''
-  });
+const LandingPage = () => {
+  const [hoveredButton, setHoveredButton] = useState(null);
 
-  const [errors, setErrors] = useState({});
+  const navigateToLogin = () => {
+    window.location.href = '/login';
+  };
 
-  // API Base URL - adjusted to match your Laravel routes
-  const API_BASE_URL = 'http://localhost:8000/api';
+  const navigateToRegister = () => {
+    window.location.href = '/register';
+  };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrors({});
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(loginForm),
-        credentials: 'include'
-      });
-
-      // Handle non-JSON responses
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response from server');
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle Laravel validation errors
-        if (data.errors) {
-          setErrors(data.errors);
-        } else {
-          setErrors({ general: data.message || 'Login failed' });
-        }
-        return;
-      }
-
-      // Save token to localStorage if using token-based auth
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-      
-      alert('Login successful!');
-      router.push('/dashboard');
-    } catch (error) {
-      setErrors({ general: error.message || 'Connection error occurred' });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrors({});
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(registerForm),
-        credentials: 'include'
-      });
-
-      // Handle non-JSON responses
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response from server');
-      }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle Laravel validation errors
-        if (data.errors) {
-          setErrors(data.errors);
-        } else {
-          setErrors({ general: data.message || 'Registration failed' });
-        }
-        return;
-      }
-
-      alert('Registration successful! Please login.');
-      setIsLogin(true);
-      setRegisterForm({
-        username: '',
-        email: '',
-        password: '',
-        password_confirmation: ''
-      });
-    } catch (error) {
-      setErrors({ general: error.message || 'Connection error occurred' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const pageVariants = {
-    initial: { opacity: 0, x: -50 },
-    in: { opacity: 1, x: 0 },
-    out: { opacity: 0, x: 50 }
-  };
-
-  const pageTransition = {
-    type: "tween",
-    ease: "anticipate",
-    duration: 0.5
-  };
-
-  const inputVariants = {
-    focus: { scale: 1.02, borderColor: '#8B5CF6' },
-    blur: { scale: 1, borderColor: '#E5E7EB' }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
   };
 
   const buttonVariants = {
-    hover: { scale: 1.02, boxShadow: "0 10px 30px rgba(139, 92, 246, 0.3)" },
-    tap: { scale: 0.98 }
+    hover: { 
+      scale: 1.05, 
+      boxShadow: "0 20px 40px rgba(139, 92, 246, 0.4)",
+      y: -2
+    },
+    tap: { scale: 0.95 }
   };
 
-  const FloatingBooks = () => (
+  const FloatingElements = () => (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {[...Array(6)].map((_, i) => (
+      {/* Floating Books */}
+      {[...Array(8)].map((_, i) => (
         <motion.div
-          key={i}
-          className="absolute text-purple-200/20 text-4xl"
+          key={`book-${i}`}
+          className="absolute text-white/10 text-2xl"
           animate={{
-            y: [0, -20, 0],
-            rotate: [0, 5, -5, 0],
-            opacity: [0.2, 0.5, 0.2]
+            y: [0, -30, 0],
+            rotate: [0, 10, -10, 0],
+            opacity: [0.1, 0.3, 0.1]
           }}
           transition={{
-            duration: 4 + i,
+            duration: 6 + i,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: i * 0.5
+            delay: i * 0.8
           }}
           style={{
-            left: `${10 + i * 15}%`,
-            top: `${20 + (i % 3) * 25}%`
+            left: `${5 + i * 12}%`,
+            top: `${10 + (i % 4) * 20}%`
           }}
         >
           <BookOpen />
         </motion.div>
       ))}
+
+      {/* Floating Stars */}
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={`star-${i}`}
+          className="absolute text-yellow-300/20 text-lg"
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.2, 0.6, 0.2],
+            rotate: [0, 180, 360]
+          }}
+          transition={{
+            duration: 4 + i,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 1.2
+          }}
+          style={{
+            right: `${10 + i * 10}%`,
+            top: `${15 + (i % 3) * 25}%`
+          }}
+        >
+          <Star />
+        </motion.div>
+      ))}
+    </div>
+  );
+
+  const BackgroundPattern = () => (
+    <div className="absolute inset-0 opacity-10">
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <pattern id="bookPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+            <rect width="20" height="20" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3"/>
+            <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#bookPattern)"/>
+      </svg>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4 relative">
-      <FloatingBooks />
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      <FloatingElements />
+      <BackgroundPattern />
       
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <pattern id="books" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M2 2h16v16H2z" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-            <path d="M6 6h8v8H6z" fill="currentColor" opacity="0.1"/>
-          </pattern>
-          <rect width="100%" height="100%" fill="url(#books)"/>
-        </svg>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-          {/* Header */}
-          <div className="text-center py-8 px-6 bg-gradient-to-r from-purple-600/30 to-blue-600/30">
-            <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="inline-block mb-4"
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="p-6"
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <motion.div 
+              className="flex items-center gap-3"
+              whileHover={{ scale: 1.05 }}
             >
-              <BookOpen className="w-12 h-12 text-white mx-auto" />
+              <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">EBook Library</h1>
+                <p className="text-purple-200 text-sm">Digital Reading Experience</p>
+              </div>
             </motion.div>
-            <h1 className="text-3xl font-bold text-white mb-2">EBook Library</h1>
-            <p className="text-purple-200">Discover thousands of the best digital books</p>
           </div>
+        </motion.header>
 
-          {/* Tab Switcher */}
-          <div className="flex bg-white/5 m-4 rounded-2xl p-1">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
-                isLogin
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-purple-200 hover:text-white'
-              }`}
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center px-6 py-12">
+          <div className="max-w-6xl mx-auto text-center">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-8"
             >
-              Login
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
-                !isLogin
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-purple-200 hover:text-white'
-              }`}
-            >
-              Register
-            </motion.button>
-          </div>
-
-          {/* Forms */}
-          <div className="p-6">
-            <AnimatePresence mode="wait">
-              {isLogin ? (
-                <motion.form
-                  key="login"
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="in"
-                  exit="out"
-                  transition={pageTransition}
-                  onSubmit={handleLogin}
-                  className="space-y-6"
+              {/* Hero Text */}
+              <motion.div variants={itemVariants} className="space-y-6">
+                <motion.div
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="inline-block mb-6"
                 >
-                  {/* Email Input */}
-                  <div>
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                      <motion.input
-                        variants={inputVariants}
-                        whileFocus="focus"
-                        type="email"
-                        value={loginForm.email}
-                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </div>
-                    {errors.email && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-400 text-sm mt-1"
-                      >
-                        {errors.email[0]}
-                      </motion.p>
-                    )}
+                  <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                    <BookOpen className="w-16 h-16 text-white mx-auto" />
                   </div>
+                </motion.div>
 
-                  {/* Password Input */}
-                  <div>
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                      <motion.input
-                        variants={inputVariants}
-                        whileFocus="focus"
-                        type={showPassword ? "text" : "password"}
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Enter your password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-400 text-sm mt-1"
-                      >
-                        {errors.password[0]}
-                      </motion.p>
-                    )}
-                  </div>
+                <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
+                  Your Digital{' '}
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Library
+                  </span>
+                  <br />
+                  Awaits
+                </h1>
 
-                  {errors.general && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-red-500/20 border border-red-500/30 rounded-xl p-3 text-red-200 text-sm"
-                    >
-                      {errors.general}
-                    </motion.div>
-                  )}
+                <p className="text-xl md:text-2xl text-purple-200 max-w-3xl mx-auto leading-relaxed">
+                  Discover thousands of digital books, create your personal library, 
+                  and embark on endless reading adventures. All in one beautiful platform.
+                </p>
+              </motion.div>
 
-                  {/* Login Button */}
-                  <motion.button
-                    variants={buttonVariants}
-                    whileHover="hover"
-                    whileTap="tap"
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              {/* Stats */}
+              <motion.div 
+                variants={itemVariants}
+                className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto my-12"
+              >
+                {[
+                  { icon: BookOpen, number: "10K+", label: "Books Available" },
+                  { icon: Users, number: "5K+", label: "Active Readers" },
+                  { icon: Star, number: "4.9", label: "Average Rating" },
+                  { icon: Download, number: "50K+", label: "Downloads" }
+                ].map((stat, index) => (
+                  <motion.div
+                    key={stat.label}
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
                   >
-                    {loading ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      <>
-                        Login <ArrowRight className="w-5 h-5" />
-                      </>
-                    )}
-                  </motion.button>
-                </motion.form>
-              ) : (
-                <motion.form
-                  key="register"
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="in"
-                  exit="out"
-                  transition={pageTransition}
-                  onSubmit={handleRegister}
-                  className="space-y-6"
+                    <stat.icon className="w-8 h-8 text-purple-300 mx-auto mb-3" />
+                    <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.number}</div>
+                    <div className="text-purple-200 text-sm">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* CTA Buttons */}
+              <motion.div 
+                variants={itemVariants}
+                className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-md mx-auto"
+              >
+                <motion.button
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  onClick={navigateToLogin}
+                  onMouseEnter={() => setHoveredButton('login')}
+                  onMouseLeave={() => setHoveredButton(null)}
+                  className="w-full sm:w-auto group relative overflow-hidden bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                 >
-                  {/* Username Input */}
-                  <div>
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Username
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                      <motion.input
-                        variants={inputVariants}
-                        whileFocus="focus"
-                        type="text"
-                        value={registerForm.username}
-                        onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Choose a username"
-                        required
-                      />
-                    </div>
-                    {errors.username && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-400 text-sm mt-1"
-                      >
-                        {errors.username[0]}
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Email Input */}
-                  <div>
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                      <motion.input
-                        variants={inputVariants}
-                        whileFocus="focus"
-                        type="email"
-                        value={registerForm.email}
-                        onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </div>
-                    {errors.email && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-400 text-sm mt-1"
-                      >
-                        {errors.email[0]}
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Password Input */}
-                  <div>
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                      <motion.input
-                        variants={inputVariants}
-                        whileFocus="focus"
-                        type={showPassword ? "text" : "password"}
-                        value={registerForm.password}
-                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Create password (min. 8 characters)"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-400 text-sm mt-1"
-                      >
-                        {errors.password[0]}
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Confirm Password Input */}
-                  <div>
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Confirm Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                      <motion.input
-                        variants={inputVariants}
-                        whileFocus="focus"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={registerForm.password_confirmation}
-                        onChange={(e) => setRegisterForm({ ...registerForm, password_confirmation: e.target.value })}
-                        className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Repeat your password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {errors.general && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-red-500/20 border border-red-500/30 rounded-xl p-3 text-red-200 text-sm"
-                    >
-                      {errors.general}
-                    </motion.div>
-                  )}
-
-                  {/* Register Button */}
-                  <motion.button
-                    variants={buttonVariants}
-                    whileHover="hover"
-                    whileTap="tap"
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <LogIn className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10 text-lg">Login</span>
+                  <motion.div
+                    animate={hoveredButton === 'login' ? { x: 5 } : { x: 0 }}
+                    className="relative z-10"
                   >
-                    {loading ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5" />
-                        Register Now
-                      </>
-                    )}
-                  </motion.button>
-                </motion.form>
-              )}
-            </AnimatePresence>
+                    <ArrowRight className="w-5 h-5" />
+                  </motion.div>
+                </motion.button>
+
+                <motion.button
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  onClick={navigateToRegister}
+                  onMouseEnter={() => setHoveredButton('register')}
+                  onMouseLeave={() => setHoveredButton(null)}
+                  className="w-full sm:w-auto group relative overflow-hidden bg-white/10 backdrop-blur-sm text-white font-semibold py-4 px-8 rounded-xl border-2 border-white/20 hover:border-white/40 hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-3"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span className="text-lg">Register</span>
+                  <motion.div
+                    animate={hoveredButton === 'register' ? { rotate: 180 } : { rotate: 0 }}
+                    className="transition-transform duration-300"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                  </motion.div>
+                </motion.button>
+              </motion.div>
+
+              {/* Additional Info */}
+              <motion.div 
+                variants={itemVariants}
+                className="text-purple-300 text-sm"
+              >
+                <p>✨ Free to join • No credit card required • Start reading instantly</p>
+              </motion.div>
+            </motion.div>
           </div>
-        </div>
+        </main>
+
+        {/* Features Preview */}
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="py-12 px-6"
+        >
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+              Why Choose Our Platform?
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: Search,
+                  title: "Smart Discovery",
+                  description: "Find your next favorite book with our intelligent recommendation system",
+                  color: "from-blue-500 to-cyan-500"
+                },
+                {
+                  icon: Heart,
+                  title: "Personal Library",
+                  description: "Create your own digital library and access it from anywhere",
+                  color: "from-pink-500 to-rose-500"
+                },
+                {
+                  icon: Shield,
+                  title: "Secure & Private",
+                  description: "Your reading history and preferences are completely private and secure",
+                  color: "from-green-500 to-emerald-500"
+                }
+              ].map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center"
+                >
+                  <div className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${feature.color} mb-4`}>
+                    <feature.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+                  <p className="text-purple-200">{feature.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
 
         {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-center mt-6 text-purple-200 text-sm"
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="py-8 px-6 border-t border-white/10"
         >
-          <p>© 2025 EBook Library. Reading is the window to the world</p>
-        </motion.div>
-      </motion.div>
+          <div className="max-w-6xl mx-auto text-center">
+            <p className="text-purple-200 text-sm">
+              © 2025 EBook Library. Reading is the window to the world.
+            </p>
+            <div className="flex justify-center gap-6 mt-4">
+              <motion.div whileHover={{ scale: 1.1 }}>
+                <a href="#" className="text-purple-300 hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.1 }}>
+                <a href="#" className="text-purple-300 hover:text-white transition-colors">
+                  Terms of Service
+                </a>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.1 }}>
+                <a href="#" className="text-purple-300 hover:text-white transition-colors">
+                  Support
+                </a>
+              </motion.div>
+            </div>
+          </div>
+        </motion.footer>
+      </div>
     </div>
   );
 };
 
-export default EBookAuthPages;
+export default LandingPage;
