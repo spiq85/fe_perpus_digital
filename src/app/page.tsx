@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, BookOpen, User, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const EBookAuthPages = () => {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -25,8 +27,8 @@ const EBookAuthPages = () => {
 
   const [errors, setErrors] = useState({});
 
-  // API Base URL - sesuaikan dengan Laravel API Anda
-  const API_BASE_URL = 'http://localhost:8000/api/v1';
+  // API Base URL - adjusted to match your Laravel routes
+  const API_BASE_URL = 'http://localhost:8000/api';
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,22 +42,38 @@ const EBookAuthPages = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(loginForm)
+        body: JSON.stringify(loginForm),
+        credentials: 'include'
       });
+
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response from server');
+      }
 
       const data = await response.json();
 
-      if (response.ok) {
-        // Simpan token ke localStorage
+      if (!response.ok) {
+        // Handle Laravel validation errors
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          setErrors({ general: data.message || 'Login failed' });
+        }
+        return;
+      }
+
+      // Save token to localStorage if using token-based auth
+      if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        alert('Login berhasil!');
-        // Redirect ke dashboard atau halaman utama
-      } else {
-        setErrors(data.errors || { general: data.message });
       }
+      
+      alert('Login successful!');
+      router.push('/dashboard');
     } catch (error) {
-      setErrors({ general: 'Terjadi kesalahan koneksi' });
+      setErrors({ general: error.message || 'Connection error occurred' });
     } finally {
       setLoading(false);
     }
@@ -73,25 +91,38 @@ const EBookAuthPages = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(registerForm)
+        body: JSON.stringify(registerForm),
+        credentials: 'include'
       });
+
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response from server');
+      }
 
       const data = await response.json();
 
-      if (response.ok) {
-        alert('Registrasi berhasil! Silakan login.');
-        setIsLogin(true);
-        setRegisterForm({
-          username: '',
-          email: '',
-          password: '',
-          password_confirmation: ''
-        });
-      } else {
-        setErrors(data.errors || { general: data.message });
+      if (!response.ok) {
+        // Handle Laravel validation errors
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          setErrors({ general: data.message || 'Registration failed' });
+        }
+        return;
       }
+
+      alert('Registration successful! Please login.');
+      setIsLogin(true);
+      setRegisterForm({
+        username: '',
+        email: '',
+        password: '',
+        password_confirmation: ''
+      });
     } catch (error) {
-      setErrors({ general: 'Terjadi kesalahan koneksi' });
+      setErrors({ general: error.message || 'Connection error occurred' });
     } finally {
       setLoading(false);
     }
@@ -179,7 +210,7 @@ const EBookAuthPages = () => {
               <BookOpen className="w-12 h-12 text-white mx-auto" />
             </motion.div>
             <h1 className="text-3xl font-bold text-white mb-2">EBook Library</h1>
-            <p className="text-purple-200">Temukan ribuan buku digital terbaik</p>
+            <p className="text-purple-200">Discover thousands of the best digital books</p>
           </div>
 
           {/* Tab Switcher */}
@@ -194,7 +225,7 @@ const EBookAuthPages = () => {
                   : 'text-purple-200 hover:text-white'
               }`}
             >
-              Masuk
+              Login
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -206,7 +237,7 @@ const EBookAuthPages = () => {
                   : 'text-purple-200 hover:text-white'
               }`}
             >
-              Daftar
+              Register
             </motion.button>
           </div>
 
@@ -238,7 +269,7 @@ const EBookAuthPages = () => {
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                         className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Masukkan email Anda"
+                        placeholder="Enter your email"
                         required
                       />
                     </div>
@@ -267,7 +298,7 @@ const EBookAuthPages = () => {
                         value={loginForm.password}
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                         className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Masukkan password"
+                        placeholder="Enter your password"
                         required
                       />
                       <button
@@ -316,7 +347,7 @@ const EBookAuthPages = () => {
                       />
                     ) : (
                       <>
-                        Masuk <ArrowRight className="w-5 h-5" />
+                        Login <ArrowRight className="w-5 h-5" />
                       </>
                     )}
                   </motion.button>
@@ -346,7 +377,7 @@ const EBookAuthPages = () => {
                         value={registerForm.username}
                         onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
                         className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Pilih username"
+                        placeholder="Choose a username"
                         required
                       />
                     </div>
@@ -375,7 +406,7 @@ const EBookAuthPages = () => {
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                         className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Masukkan email Anda"
+                        placeholder="Enter your email"
                         required
                       />
                     </div>
@@ -404,7 +435,7 @@ const EBookAuthPages = () => {
                         value={registerForm.password}
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                         className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Buat password (min. 8 karakter)"
+                        placeholder="Create password (min. 8 characters)"
                         required
                       />
                       <button
@@ -429,7 +460,7 @@ const EBookAuthPages = () => {
                   {/* Confirm Password Input */}
                   <div>
                     <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Konfirmasi Password
+                      Confirm Password
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
@@ -440,7 +471,7 @@ const EBookAuthPages = () => {
                         value={registerForm.password_confirmation}
                         onChange={(e) => setRegisterForm({ ...registerForm, password_confirmation: e.target.value })}
                         className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                        placeholder="Ulangi password"
+                        placeholder="Repeat your password"
                         required
                       />
                       <button
@@ -481,7 +512,7 @@ const EBookAuthPages = () => {
                     ) : (
                       <>
                         <Sparkles className="w-5 h-5" />
-                        Daftar Sekarang
+                        Register Now
                       </>
                     )}
                   </motion.button>
@@ -498,7 +529,7 @@ const EBookAuthPages = () => {
           transition={{ delay: 0.3 }}
           className="text-center mt-6 text-purple-200 text-sm"
         >
-          <p>© 2025 EBook Library. Membaca adalah jendela dunia</p>
+          <p>© 2025 EBook Library. Reading is the window to the world</p>
         </motion.div>
       </motion.div>
     </div>
